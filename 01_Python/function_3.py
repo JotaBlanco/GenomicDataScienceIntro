@@ -7,7 +7,9 @@ For instance, the three possible forward reading frames for the sequence AGGTGAC
 - A GGT GAC ACC GCA AGC CTT ATA TTA GC
 - AG GTG ACA CCG CAA GCC TTA TAT TAG C
 
-These are called reading frames 1, 2, and 3 respectively. An open reading frame (ORF) is the part of a reading frame that has the potential to encode a protein.
+These are called reading frames 1, 2, and 3 respectively.
+
+An open reading frame (ORF) is the part of a reading frame that has the potential to encode a protein.
 It starts with a start codon (ATG), and ends with a stop codon (TAA, TAG or TGA). For instance, ATGAAATAG is an ORF of length 9.
 
 Given an input reading frame on the forward strand (1, 2, or 3) your program should be able to identify all ORFs present
@@ -27,28 +29,67 @@ Note that because the following sequence:
 import re
 import pandas as pd
 
+
+def get_orfs_from_seq_text(seq_text, reading_frame):
+
+    reading_frames_dict = {1: 0, 2: 2, 3: 1}
+    start = reading_frames_dict[reading_frame]
+    end = (len(seq_text) - start) // 3 * 3
+
+    in_orf = False
+    orfs_dict = {}
+
+    for i in range(start, end, 3):
+        codon_i = seq_text[i: i + 3]
+
+        if in_orf is False:
+            if codon_i == "ATG":
+                current_orf = "ATG"
+                index = i +1
+                in_orf = True
+            else:
+                continue
+        else:
+            current_orf = current_orf + codon_i
+            if codon_i in ["TAA", "TAG", "TGA"]:
+                orfs_dict[(len(current_orf), index)] = current_orf
+                in_orf = False
+
+    return orfs_dict
+
+
 def analyse_seq_orfs(seq_dict):
-    pattern = re.compile(r'(ATG.*?(TAA|TAG|TGA))')
-    df = pd.DataFrame()
+    all_frame_1 = {}
+    all_frame_2 = {}
+    all_frame_3 = {}
 
     for id_i in seq_dict:
-        print("ID", id_i)
+        print("\nID", id_i)
         seq_text = seq_dict[id_i]
-        matches = [match[0] for match in pattern.findall(seq_text)]
 
-        longest_orf = max(matches)
-        start_position = seq_text.find(longest_orf)+1
-        print("Longest ORF seq:", longest_orf)
-        print("Starting position:", start_position)
+        dic_frame_1 = get_orfs_from_seq_text(seq_text, reading_frame=1)
+        all_frame_1.update(dic_frame_1)
+        print("Reading frame 1", sorted(dic_frame_1.keys(),reverse=True))
 
-        df_i = pd.DataFrame({
-            "id": [id_i],
-            "length_longest": [len(longest_orf)],
-            "start_pos": [start_position]
-        })
-        df = pd.concat([df, df_i])
+        dic_frame_2 = get_orfs_from_seq_text(seq_text, reading_frame=2)
+        all_frame_2.update(dic_frame_2)
+        print("Reading frame 2", sorted(dic_frame_2.keys(),reverse=True))
 
-    df = df.reset_index(drop=True)
-    longest_orf_ALL = df["length_longest"].max()
-    print("\n\n\nLONGEST ORF from ALL SEQUENCES")
-    print(df[df["length_longest"]==longest_orf_ALL])
+        dic_frame_3 = get_orfs_from_seq_text(seq_text, reading_frame=3)
+        all_frame_3.update(dic_frame_3)
+        print("Reading frame 3", sorted(dic_frame_3.keys(),reverse=True))
+
+    print("\n\nReading frame 1")
+    print(sorted(all_frame_1.keys(),reverse=True))
+    print("\nReading frame 2")
+    print(sorted(all_frame_2.keys(),reverse=True))
+    print("\nReading frame 3")
+    print(sorted(all_frame_3.keys(),reverse=True))
+
+    print("\nALL Reading frames")
+    all_frames = {}
+    all_frames.update(all_frame_1)
+    all_frames.update(all_frame_2)
+    all_frames.update(all_frame_3)
+    print(sorted(all_frames.keys(),reverse=True))
+

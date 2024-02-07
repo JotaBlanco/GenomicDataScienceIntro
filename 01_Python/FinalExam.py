@@ -1,9 +1,10 @@
 # READING FASTA FILE
+filename = "dna2.fasta" #"dna.example.fasta"
 # Open file
 try:
-    f = open("dna.example.fasta")
+    f = open(filename)
 except IOError:
-    print("File dna.example.data does not exist!")
+    print("File {} does not exist!".format(filename))
 
 # Iterate over lines
 seqs = {}
@@ -36,4 +37,7 @@ analyse_seq_orfs(seqs)
 # QUestion 4
 from function_4 import find_repeats_in_all_seqs
 print("\n\n\nQUESTION 4")
-find_repeats_in_all_seqs(seqs, 10)
+find_repeats_in_all_seqs(seqs, 6)
+
+# TGCGCGC 36
+# CGCGCCG 63
